@@ -12,78 +12,32 @@ using UnityEngine;
 
 public class Pet
 {
-    private string _name;
-    private int _fullness;
-    private int _happiness;
-    private int _energy;
+    public string Name {get; set;} 
+    public float Fullness {get; set;}
+    public float Happiness {get; set;}
+    public float Energy {get; set;}
 
-    public Pet(string name)
+    public Pet(string name) //adds the constructor for the pet class
     {
-        _name = name;
-        _fullness = 100;
-        _happiness = 100;
-        _energy = 100;
+        Name = name;
+        Fullness = 100;
+        Happiness = 100;
+        Energy = 100;
     }
 
     public void GainEnergy()
     {
-        _energy += 10;
+        Energy += 10; //adds energy when the pet is rested
     }
 
     public void GainHappiness()
     {
-       _happiness += 10;
+        Happiness += 10; //adds happiness to the pet when played with/petted
     }
 
     public void GainFullness()
     {
-        _fullness += 10;
+        Fullness += 10; // pet gets less hungry when fed
     }
 
-    public string Name
-    {
-        get
-        {
-            return _name;
-        }
-        set
-        {
-            _name = value;
-        }
-    }
-    public int Fullness
-    {
-        get
-        {
-            return _fullness;
-        }
-        set
-        {
-            _fullness = value;
-        }
-    }
-
-    public int Happiness
-    {
-        get
-        {
-            return _happiness;
-        }
-        set
-        {
-            _happiness = value;
-        }
-    }
-
-    public int Energy
-    {
-        get
-        {
-            return _energy;
-        }
-        set
-        {
-            _energy = value;
-        }
-    }
 }

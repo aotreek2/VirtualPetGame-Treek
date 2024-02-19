@@ -16,28 +16,36 @@ public class PetManager : MonoBehaviour
 {
     [SerializeField] private TMP_InputField inputPetName;
     [SerializeField] private Button startGameButton;
-    [SerializeField] private GameObject mainMenuPanel, gamePanel, mainGamePanel;
-    [SerializeField] private TMP_Text petNameDisplay, enterNameDisplay, happinessTxt, hungerTxt, energyTxt;
+    [SerializeField] private GameObject mainMenuPanel, gamePanel, mainGamePanel, gameOverPanel;
+    [SerializeField] private TMP_Text petNameDisplay, enterNameDisplay, happinessTxt, hungerTxt, energyTxt, ripTxt;
 
     private Pet createdPet;
     private bool petIsAlive;
+    private float hungerDecreaseRate, decreaseHappinessRate, decreaseEnergyRate, timer;
 
     void Start()
     {
-        inputPetName.onValueChanged.AddListener(OnInputFieldChanged);
-        startGameButton.interactable = false;
+        inputPetName.onValueChanged.AddListener(OnInputFieldChanged); //adds the listener to the method for the input field
+        startGameButton.interactable = false; //sets the button to not be interacted with on start
     }
 
     // Update is called once per frame
     void Update()
     {
-        while(petIsAlive == true)
+        if(petIsAlive == true) //if the pet is alive
         {
-            GainHunger(.6f * Time.deltaTime);
-            LoseHappiness(.4f * Time.deltaTime);
-            LoseEnergy(.6f * Time.deltaTime);
-            CheckLoss();
-            UpdateUI();
+            timer = Time.deltaTime; //sets the time for the rate over time formula
+
+            GainHunger(hungerDecreaseRate * timer); //calls the method with the result of the rate over time value being sent to it 
+            decreaseHappiness(decreaseHappinessRate * timer);
+            DecreaseEnergy(decreaseEnergyRate * timer);
+
+            CheckLoss(); //checks the lose condition
+
+            hungerTxt.text = "Fullness: " + createdPet.Fullness.ToString(); //displays the stats of the pet 
+            happinessTxt.text = "Happiness: " + createdPet.Happiness.ToString();
+            energyTxt.text = "Energy: " + createdPet.Energy.ToString();
+
         }
     }
 
@@ -48,23 +56,27 @@ public class PetManager : MonoBehaviour
         
         if(!string.IsNullOrEmpty(txt))
         {
-            enterNameDisplay.text = "";
+            enterNameDisplay.text = ""; //there is text in the input field
         }
         else
         {
-            enterNameDisplay.text = "Enter a name ";
+            enterNameDisplay.text = "Enter a name "; //if there is no text in the input field this message will pop up to let the user know
         }
     }
 
     public void OnSubmitButtonClick()
     {
         gamePanel.SetActive(false);
-        string petName = inputPetName.text;
-        createdPet = new Pet(petName);
-        petIsAlive = true;
+        string petName = inputPetName.text; //grabs the name the player inputs in the input field
+        createdPet = new Pet(petName); //creates a new instance of the pet script
+        petIsAlive = true; //the pet is alive
 
-        petNameDisplay.text = petName;
-        hungerTxt.text = "Fullness: " + createdPet.Fullness;
+        hungerDecreaseRate = Random.Range(1f, 3f);
+        decreaseHappinessRate = Random.Range(1f, 3f); //gives random ranges to decrease rates
+        decreaseEnergyRate = Random.Range(1f, 3f);
+
+        petNameDisplay.text = petName; //displays the name of the pet
+        hungerTxt.text = "Fullness: " + createdPet.Fullness; //displays the stats of the pet 
         happinessTxt.text = "Happiness: " + createdPet.Happiness;
         energyTxt.text = "Energy: " + createdPet.Energy;
 
@@ -72,55 +84,52 @@ public class PetManager : MonoBehaviour
 
     public void FeedButtonClick()
     {
-        createdPet.GainFullness();
+        createdPet.GainFullness(); //calls the method in the Pet script, so that when the button is clicked the pet is fed
     }
 
     public void PetButtonClick()
     {
-        createdPet.GainHappiness();
+        createdPet.GainHappiness(); //calls the method in the Pet script, so that when the button is clicked the pet is played with/petted
     }
 
     public void RestButtonClick()
     {
-        createdPet.GainEnergy();
+        createdPet.GainEnergy(); //calls the method in the Pet script, so that when the button is clicked the pet is sleeping
     }
 
     void GainHunger(float value)
     {
-        createdPet.Fullness -= (int)value;
-        createdPet.Fullness = Mathf.Max(100, createdPet.Fullness); // Ensure hunger doesn't go below 0
+        createdPet.Fullness -= value; //over time, subtract the fullness from the rate over time value
+        createdPet.Fullness = Mathf.Clamp(createdPet.Fullness, 0f, 100f); //clamps so it doesnt go below 0 or above 100
     }
 
-    void LoseHappiness(float value)
+    void decreaseHappiness(float value)
     {
-        createdPet.Happiness += (int)value;
-        createdPet.Happiness = Mathf.Min(100, createdPet.Happiness); // Ensure happiness doesn't exceed 100
+        createdPet.Happiness -= value; //over time, subtract the happiness from the rate over time value
+        createdPet.Happiness = Mathf.Clamp(createdPet.Happiness, 0f, 100f); //clamps so it doesnt go below 0 or above 100
     }
 
-    void LoseEnergy(float value)
+    void DecreaseEnergy(float value)
     {
-        createdPet.Energy -= (int)value;
-        createdPet.Energy = Mathf.Max(0, createdPet.Energy); // Ensure energy doesn't go below 0
+        createdPet.Energy -= value; //over time, subtract the energy from the rate over time value
+        createdPet.Energy = Mathf.Clamp(createdPet.Energy, 0f, 100f); //clamps so it doesnt go below 0 or above 100
     }
 
     private void CheckLoss()
     {
-        if (createdPet.Fullness == 0 || createdPet.Energy == 0 || createdPet.Happiness == 0)
-        {
-            petIsAlive = false;
-        }
-    }
+        string petName = inputPetName.text;
 
-    private void UpdateUI()
-    {
-        hungerTxt.text = "Fullness: " + createdPet.Fullness;
-        happinessTxt.text = "Happiness: " + createdPet.Happiness;
-        energyTxt.text = "Energy: " + createdPet.Energy;
+        if (createdPet.Fullness == 0 || createdPet.Energy == 0 || createdPet.Happiness == 0) //if any of the stats reaches 0
+        {
+            petIsAlive = false; //the game is over
+            mainGamePanel.SetActive(false); 
+            ripTxt.text = "RIP " + petName; //displays a rip message to the pet
+        }
     }
 
     public void OnPlayButtonClick()
     {
-        mainMenuPanel.SetActive(false);
+        mainMenuPanel.SetActive(false); 
     }
 
     public void OnQuitButtonClick()
@@ -130,6 +139,11 @@ public class PetManager : MonoBehaviour
 
     public void OnAdoptAgainButtonClick()
     {
-        gamePanel.SetActive(true);
+        gamePanel.SetActive(true); //brings the panel to re enter a name 
+        mainGamePanel.SetActive(true);
+
+        createdPet.Energy = 100;
+        createdPet.Fullness = 100;
+        createdPet.Happiness = 100;
     }
 }
